@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Heroes
 
-## Getting Started
+Assignment implementation for a subscription-led golf platform that combines:
 
-First, run the development server:
+- Stableford score tracking with latest-5 retention
+- Monthly draw and prize pool logic
+- Charity allocation per subscriber
+- Subscriber dashboard and admin operations view
+
+## Stack
+
+- Next.js 16
+- TypeScript
+- Tailwind CSS v4
+- Local seeded data layer designed to be swapped with Supabase
+
+## Pages
+
+- `/` marketing landing page
+- `/auth` demo reviewer login handoff
+- `/charities` charity directory
+- `/dashboard` subscriber experience
+- `/admin` admin operations dashboard
+
+## Demo Credentials
+
+- Subscriber: `amelia@digitalheroes.demo` / `DemoPass!2026`
+- Admin: `admin@digitalheroes.demo` / `AdminPass!2026`
+
+## Local Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Handoff
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and configure:
 
-## Learn More
+- Supabase project keys
+- Stripe keys
+- Stripe webhook secret
+- Stripe price IDs for monthly and yearly plans
+- `NEXT_PUBLIC_APP_URL` for success and cancel redirects
 
-To learn more about Next.js, take a look at the following resources:
+## Stripe Checkout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The payment gateway is implemented with hosted Stripe Checkout.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `POST /api/checkout` creates a Stripe Checkout Session in `subscription` mode
+- `/api/checkout?planId=monthly|yearly` also works for direct plan buttons
+- The homepage pricing cards and `/auth` page both submit directly into checkout
+- `/checkout/success` shows the completed session summary
+- `/checkout/cancel` handles user cancellation and config errors
+- `/api/stripe/webhook` verifies Stripe webhook signatures for subscription events
 
-## Deploy on Vercel
+If `STRIPE_MONTHLY_PRICE_ID` and `STRIPE_YEARLY_PRICE_ID` are not set, the app falls back to inline recurring price data using the current demo prices.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Testing Stripe
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Add `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `NEXT_PUBLIC_APP_URL` to `.env.local`
+2. Start the app with `npm run dev`
+3. Open `/subscribe`
+4. Enter an email and continue to Stripe payment
+5. Use Stripe test card `4242 4242 4242 4242`
+
+## Production Notes
+
+The current build uses seeded in-memory data so the assignment can be reviewed immediately without external credentials. The domain rules and UI surfaces are already structured for a production swap to:
+
+- Supabase Auth
+- Supabase Postgres tables
+- Stripe Checkout and webhooks
+- Vercel deployment
+
+The requirement mapping is documented in [docs/PRD-MAPPING.md](/Users/abhishek/Desktop/digital_heroes/docs/PRD-MAPPING.md).
+# digital_heroes
